@@ -2,10 +2,10 @@ from fastapi import APIRouter
 from fastapi import HTTPException
 from fastapi import status
 
-from .schema.shipment import Shipment, PreShipment
-from .dependencies import ShipmentServiceDep
+from ..schema.shipment import Shipment, PreShipment
+from ..dependencies import ShipmentServiceDep
 
-router = APIRouter(prefix="/shipment")
+router = APIRouter(prefix="/shipment", tags=["shipment"])
 
 @router.get("/{id}", response_model=Shipment)
 async def get_shipment(id: int, service: ShipmentServiceDep):

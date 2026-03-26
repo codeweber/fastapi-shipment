@@ -2,3 +2,4 @@ fastapi[all]
 sqlmodel
 asyncpg
 greenlet
+bcrypt

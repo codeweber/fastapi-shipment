@@ -18,3 +18,9 @@ class Shipment(Base):
     estimated_delivery: Mapped[datetime]
     status: Mapped[ShipmentStatus]
 
+class Seller(Base):
+    __tablename__ = "seller"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str]
+    email: Mapped[str]
+    password_hash: Mapped[str]
