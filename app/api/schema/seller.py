@@ -13,3 +13,8 @@ class SellerRead(SellerBase):
 
 class SellerWithPassword(SellerBase):
     password: str
+
+
+class Token(BaseModel):
+    access_token: str 
+    token_type: str

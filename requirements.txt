@@ -2,4 +2,5 @@ fastapi[all]
 sqlmodel
 asyncpg
 greenlet
-bcrypt
+pwdlib[argon2]
+pyjwt
