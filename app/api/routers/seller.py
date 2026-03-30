@@ -27,4 +27,4 @@ async def login_seller(
             detail="Username or password are incorrect.",
         )
     
-    return Token(token, token_type="bearer")
+    return Token(access_token=token, token_type="bearer")

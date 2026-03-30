@@ -5,7 +5,7 @@ import jwt
 from app.settings import security_settings
 
 
-def encode_access_token(data: dict, expiry: timedelta = security_settings.TOKEN_EXPIRES_MINUTES) -> str:
+def encode_access_token(data: dict, expiry: timedelta = timedelta(minutes=security_settings.TOKEN_EXPIRES_MINUTES)) -> str:
     return jwt.encode(
         payload={**data, "exp": datetime.now(UTC) + expiry},
         algorithm=security_settings.ALGO,
