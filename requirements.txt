@@ -4,3 +4,4 @@ asyncpg
 greenlet
 pwdlib[argon2]
 pyjwt
+redis[hiredis]

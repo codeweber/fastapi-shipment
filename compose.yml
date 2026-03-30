@@ -12,6 +12,16 @@ services:
     environment:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
 
+  cache:
+    image: redis:8.6-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - type: volume
+        source: redis-data 
+        target: /data
+
 
 volumes:
   pg-data:
+  redis-data:
