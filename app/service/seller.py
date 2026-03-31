@@ -44,7 +44,9 @@ class SellerService:
             return None
         
         token = encode_access_token(data={
-            "sub": maybe_seller.id,
+            "user": {
+                "id": maybe_seller.id,
+            }
         })
 
         return token
