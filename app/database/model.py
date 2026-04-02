@@ -1,7 +1,8 @@
+from sqlalchemy import ForeignKey
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
-from sqlalchemy.orm import mapped_column
+from sqlalchemy.orm import mapped_column, relationship
 from datetime import datetime
 
 from ..model.shipment_status import ShipmentStatus
@@ -17,6 +18,9 @@ class Shipment(Base):
     weight: Mapped[float]
     estimated_delivery: Mapped[datetime]
     status: Mapped[ShipmentStatus]
+    seller_id: Mapped[int] = mapped_column(ForeignKey("seller.id"))
+
+    seller: Mapped["Seller"] = relationship(back_populates="shipments")
 
 class Seller(Base):
     __tablename__ = "seller"
@@ -24,3 +28,5 @@ class Seller(Base):
     name: Mapped[str]
     email: Mapped[str]
     password_hash: Mapped[str]
+
+    shipments: Mapped["Shipment"] = relationship(back_populates="seller")

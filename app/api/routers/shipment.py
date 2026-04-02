@@ -21,8 +21,8 @@ async def get_shipment(id: int, service: ShipmentServiceDep, _: CurrentSeller):
 
 
 @router.post("/")
-async def create_shipment(pre_shipment: PreShipment, service: ShipmentServiceDep, _: CurrentSeller) -> Shipment:
-    result = await service.create(pre_shipment)
+async def create_shipment(pre_shipment: PreShipment, service: ShipmentServiceDep, seller: CurrentSeller) -> Shipment:
+    result = await service.create(pre_shipment, seller.id)
     return result
 
 
