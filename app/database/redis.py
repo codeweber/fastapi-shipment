@@ -1,4 +1,3 @@
-from contextlib import asynccontextmanager
 from typing import Annotated
 
 from fastapi import Depends, Request
@@ -12,7 +11,6 @@ def get_redis_connection_pool():
 async def close_redis_connection_pool(pool: ConnectionPool) -> None:
     await pool.aclose()
 
-@asynccontextmanager
 async def get_redis_connection(request: Request):
     conn = Redis(connection_pool=request.app.state.redis_pool)
     try:
