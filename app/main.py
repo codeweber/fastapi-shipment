@@ -13,7 +13,7 @@ async def lifespan_handler(app: FastAPI):
     try:
         yield
     finally:
-        close_redis_connection_pool(app.state.redis_pool)
+        await close_redis_connection_pool(app.state.redis_pool)
 
 app = FastAPI(lifespan=lifespan_handler)
 
