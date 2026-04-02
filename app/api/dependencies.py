@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends, HTTPException, status
 
 from app.database.model import Seller
+from app.database.redis import RedisDep
 from app.service import utils
 
 from ..database.session import get_session
@@ -18,33 +19,46 @@ def get_shipment_service(session: SessionDep):
 
 ShipmentServiceDep = Annotated[ShipmentService, Depends(get_shipment_service)]
 
-def get_seller_service(session: SessionDep):
-    return SellerService(session)
+def get_seller_service(session: SessionDep, redis: RedisDep):
+    return SellerService(session, redis)
 
 SellerServiceDep = Annotated[SellerService, Depends(get_seller_service)]
 
-async def get_current_seller(
-    token: Annotated[str, Depends(oauth2_scheme)],
-    seller_service: SellerServiceDep
-) -> Seller:
-    credentials_exception = HTTPException(
+TokenDep = Annotated[str, Depends(oauth2_scheme)]
+
+credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
 
-    try:    
-        seller_id = utils.decode_access_token(token).get("user", {}).get("id")
-        if seller_id is None:
-            print("seller_id is None")
-            return credentials_exception
+def get_token_payload(
+        token: TokenDep
+) -> dict:
+    try: 
+        payload = utils.decode_access_token(token)   
     except InvalidTokenError:
         raise credentials_exception
+    return payload
+    
+
+async def get_current_seller(
+    token_payload: Annotated[dict, Depends(get_token_payload)],
+    seller_service: SellerServiceDep
+) -> Seller:
+    
+    seller_id = token_payload.get("user", {}).get("id")
+    if seller_id is None:
+        return credentials_exception
+    
+    token_id = token_payload.get("jti")
+    is_token_blacklisted = await seller_service.is_token_blacklisted(token_id)
+    if (not token_id) or (is_token_blacklisted):
+        return credentials_exception
 
     seller = await seller_service.get(seller_id)
 
     if seller is None:
-        print("Error: seller not found")
         raise credentials_exception
     
     return seller

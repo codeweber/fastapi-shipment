@@ -1,4 +1,5 @@
 from datetime import UTC, datetime, timedelta
+from uuid import uuid4
 
 import jwt
 
@@ -7,7 +8,7 @@ from app.settings import security_settings
 
 def encode_access_token(data: dict, expiry: timedelta = timedelta(minutes=security_settings.TOKEN_EXPIRES_MINUTES)) -> str:
     return jwt.encode(
-        payload={**data, "exp": datetime.now(UTC) + expiry},
+        payload={**data, "exp": datetime.now(UTC) + expiry, "jti": str(uuid4())},
         algorithm=security_settings.ALGO,
         key=security_settings.SECRET,
     )

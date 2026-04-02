@@ -14,6 +14,18 @@ class DatabaseSettings(BaseSettings):
     def get_url(self) -> str:
         return f"postgresql+asyncpg://{self.USER}:{self.PASSWORD}@{self.HOST}:{self.PORT}/{self.DB}"
     
+class CacheSettings(BaseSettings):
+    HOST: str 
+    PORT: int 
+    DB: int
+
+    model_config = SettingsConfigDict(
+        env_file=".env", env_ignore_empty=True, extra="ignore", env_prefix="REDIS_"
+    )
+
+    def get_url(self) -> str:
+        return f"redis://{self.HOST}:{self.PORT}/{self.DB}"
+    
 
 class SecuritySettings(BaseSettings):
     SECRET: str 
@@ -26,6 +38,7 @@ class SecuritySettings(BaseSettings):
 
 
 db_settings = DatabaseSettings()
+cache_settings = CacheSettings()
 security_settings = SecuritySettings()
 
 if __name__ == "__main__":

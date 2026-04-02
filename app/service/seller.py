@@ -1,6 +1,8 @@
+from datetime import UTC, datetime, timedelta
 from typing import Optional
 
 from pwdlib import PasswordHash
+from redis.asyncio import Redis
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,8 +13,9 @@ from .utils import encode_access_token
 
 class SellerService:
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession, redis: Redis):
         self.session = session
+        self.redis = redis
         self._password_hash = PasswordHash.recommended()
 
     def hash(self, password: str) -> str: 
@@ -53,3 +56,14 @@ class SellerService:
     
     async def get(self, id: int) -> Optional[Seller]:
         return (await self.session.get(Seller, id))
+    
+    async def blacklist_token(self, token_id: str, expiry: datetime) -> None:
+        current_timestamp = datetime.now(UTC)
+        ttl: timedelta = expiry - current_timestamp
+        await self.redis.set(token_id, current_timestamp, ttl)
+
+    async def is_token_blacklisted(self, token_id: str) -> bool:
+        if (await self.redis.get(token_id)):
+            return True
+        else:
+            return False

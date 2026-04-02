@@ -2,13 +2,18 @@ from fastapi import FastAPI
 from scalar_fastapi import get_scalar_api_reference
 from contextlib import asynccontextmanager
 
+from app.database.redis import close_redis_connection_pool, get_redis_connection_pool
 from app.database.session import create_tables
 from .api.routers import shipment, seller
 
 @asynccontextmanager
 async def lifespan_handler(app: FastAPI):
     await create_tables()
-    yield
+    app.state.redis_pool = get_redis_connection_pool()
+    try:
+        yield
+    finally:
+        close_redis_connection_pool(app.state.redis_pool)
 
 app = FastAPI(lifespan=lifespan_handler)
 
