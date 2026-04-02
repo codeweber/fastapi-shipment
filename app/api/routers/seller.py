@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
@@ -34,6 +35,6 @@ async def logout_sellet(
     service: SellerServiceDep,
 ) -> None:
     token_id = token_payload.get("jti")
-    expiry_time = token_payload.get("exp")
+    expiry_time = datetime.fromtimestamp(token_payload.get("exp"), tz=UTC)
     await service.blacklist_token(token_id, expiry_time)
 

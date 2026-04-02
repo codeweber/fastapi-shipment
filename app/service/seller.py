@@ -59,11 +59,15 @@ class SellerService:
     
     async def blacklist_token(self, token_id: str, expiry: datetime) -> None:
         current_timestamp = datetime.now(UTC)
-        ttl: timedelta = expiry - current_timestamp
-        await self.redis.set(token_id, current_timestamp, ttl)
+        if expiry <= current_timestamp:
+            ttl = timedelta(days=1)
+        else:
+            ttl = (expiry - current_timestamp) + timedelta(days=1)
+        await self.redis.set(token_id, current_timestamp.isoformat(), ttl)
 
     async def is_token_blacklisted(self, token_id: str) -> bool:
-        if (await self.redis.get(token_id)):
+        result = await self.redis.get(token_id)
+        if (result):
             return True
         else:
             return False

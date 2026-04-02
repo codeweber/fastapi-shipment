@@ -49,12 +49,12 @@ async def get_current_seller(
     
     seller_id = token_payload.get("user", {}).get("id")
     if seller_id is None:
-        return credentials_exception
+        raise credentials_exception
     
     token_id = token_payload.get("jti")
     is_token_blacklisted = await seller_service.is_token_blacklisted(token_id)
     if (not token_id) or (is_token_blacklisted):
-        return credentials_exception
+        raise credentials_exception
 
     seller = await seller_service.get(seller_id)
 
