@@ -1,5 +1,6 @@
 from datetime import UTC, datetime, timedelta
 from typing import Optional
+from uuid import UUID
 
 from pwdlib import PasswordHash
 from redis.asyncio import Redis
@@ -48,13 +49,13 @@ class SellerService:
         
         token = encode_access_token(data={
             "user": {
-                "id": maybe_seller.id,
+                "id": str(maybe_seller.id),
             }
         })
 
         return token
     
-    async def get(self, id: int) -> Optional[Seller]:
+    async def get(self, id: UUID) -> Optional[Seller]:
         return (await self.session.get(Seller, id))
     
     async def blacklist_token(self, token_id: str, expiry: datetime) -> None:

@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from pydantic import BaseModel
 from datetime import datetime
 
@@ -9,7 +11,7 @@ class PreShipment(BaseModel):
 
 
 class Shipment(PreShipment):
-    id: int
+    id: UUID
     estimated_delivery: datetime
     status: ShipmentStatus
 

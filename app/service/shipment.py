@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timedelta
 
@@ -10,6 +12,7 @@ class ShipmentService():
         self.session = session
 
     async def create(self, details: PreShipment, seller: Seller) -> Shipment:
+        print(f"creating shipment for seller {seller}")
         new_shipment = Shipment(
             **details.model_dump(),
             status = ShipmentStatus.placed,
@@ -22,13 +25,13 @@ class ShipmentService():
         
         return new_shipment
 
-    async def get(self, id: int) -> Shipment | None:
+    async def get(self, id: UUID) -> Shipment | None:
         return (await self.session.get(Shipment, id))
     
-    async def delete(self, id: int) -> int | None:
+    async def delete(self, id: UUID, seller: Seller) -> int | None:
         entity_to_delete = await self.get(id)
 
-        if entity_to_delete is None:
+        if entity_to_delete is None or (entity_to_delete.seller_id != seller.id):
             return None 
         
         await self.session.delete(entity_to_delete)

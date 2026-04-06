@@ -1,4 +1,5 @@
 from typing import Annotated
+from uuid import UUID
 from jwt import InvalidTokenError
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends, HTTPException, status
@@ -47,7 +48,7 @@ async def get_current_seller(
     seller_service: SellerServiceDep
 ) -> Seller:
     
-    seller_id = token_payload.get("user", {}).get("id")
+    seller_id = UUID(token_payload.get("user", {}).get("id"))
     if seller_id is None:
         raise credentials_exception
     
