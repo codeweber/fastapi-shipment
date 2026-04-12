@@ -35,6 +35,9 @@ class DeliveryPartnerService(UserService):
         return result.all()
 
     async def get_eligible_partner(self, zip: int) -> Optional[DeliveryPartner]:
+        # TODO: potential improvement
+        # select(DeliveryPartner).join(Shipment).where(Shipment.status != "delivered").group_by(DeliveryPartner.id).having(func.count(Shipment.id) < DeliveryPartner.max_shipment_capacity)
+
         for partner in await self.get_partners_by_zip(zip):
             num_active_shipments = sum(
                 1
