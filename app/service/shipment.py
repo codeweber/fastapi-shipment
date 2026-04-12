@@ -3,7 +3,7 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timedelta
 
-from ..database.model import Seller, Shipment, ShipmentStatus
+from ..database.model import DeliveryPartner, Seller, Shipment, ShipmentStatus
 from ..api.schema.shipment import PreShipment
 
 class ShipmentService():
@@ -11,13 +11,13 @@ class ShipmentService():
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def create(self, details: PreShipment, seller: Seller) -> Shipment:
-        print(f"creating shipment for seller {seller}")
+    async def create(self, details: PreShipment, seller: Seller, delivery_partner: DeliveryPartner) -> Shipment:
         new_shipment = Shipment(
             **details.model_dump(),
             status = ShipmentStatus.placed,
             estimated_delivery = datetime.now() + timedelta(days = 3),
-            seller_id=seller.id
+            seller_id = seller.id,
+            delivery_partner_id = delivery_partner.id
         )
         self.session.add(new_shipment)
         await self.session.commit()

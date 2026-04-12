@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import status
 
-from app.api.dependencies import SellerServiceDep, get_token_payload
+from app.api.dependencies import SellerServiceDep, get_seller_token_payload
 from app.api.schema.seller import SellerRead, SellerWithPassword, Token
 
 router = APIRouter(prefix="/seller", tags=["seller"])
@@ -31,7 +31,7 @@ async def login_seller(
 
 @router.post("/logout")
 async def logout_sellet(
-    token_payload: Annotated[dict, Depends(get_token_payload)],
+    token_payload: Annotated[dict, Depends(get_seller_token_payload)],
     service: SellerServiceDep,
 ) -> None:
     token_id = token_payload.get("jti")

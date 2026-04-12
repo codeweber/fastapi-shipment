@@ -5,7 +5,7 @@ from fastapi import HTTPException
 from fastapi import status
 
 from ..schema.shipment import Shipment, PreShipment
-from ..dependencies import CurrentSeller, ShipmentServiceDep
+from ..dependencies import CurrentSeller, PartnerServiceDep, ShipmentServiceDep
 
 router = APIRouter(prefix="/shipment", tags=["shipment"])
 
@@ -23,8 +23,16 @@ async def get_shipment(id: UUID, service: ShipmentServiceDep, seller: CurrentSel
 
 
 @router.post("/")
-async def create_shipment(pre_shipment: PreShipment, service: ShipmentServiceDep, seller: CurrentSeller) -> Shipment:
-    result = await service.create(pre_shipment, seller)
+async def create_shipment(pre_shipment: PreShipment, service: ShipmentServiceDep, seller: CurrentSeller, partner_service: PartnerServiceDep) -> Shipment:
+    delivery_partner = await partner_service.get_eligible_partner(pre_shipment.zip_code)
+
+    if delivery_partner is None:
+        raise HTTPException(
+            status_code=status.HTTP_406_NOT_ACCEPTABLE,
+            detail=f"Could not find an eligible delivery partner for shipment with zip code {pre_shipment.zip_code}"
+        )
+
+    result = await service.create(pre_shipment, seller, delivery_partner)
     return result
 
 

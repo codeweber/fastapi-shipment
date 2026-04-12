@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from scalar_fastapi import get_scalar_api_reference
 from contextlib import asynccontextmanager
 
+from app.api.routers import delivery_partner
 from app.database.redis import close_redis_connection_pool, get_redis_connection_pool
 from app.database.session import create_tables
 from .api.routers import shipment, seller
@@ -19,6 +20,7 @@ app = FastAPI(lifespan=lifespan_handler)
 
 app.include_router(shipment.router)
 app.include_router(seller.router)
+app.include_router(delivery_partner.router)
 
 @app.get("/scalar", include_in_schema=False)
 def get_scalar_docs():

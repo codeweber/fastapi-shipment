@@ -20,6 +20,7 @@ class Shipment(Base):
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     content: Mapped[str]
     weight: Mapped[float]
+    zip_code: Mapped[int]
     estimated_delivery: Mapped[datetime]
     status: Mapped[ShipmentStatus]
     seller_id: Mapped[UUID] = mapped_column(ForeignKey("seller.id"))
@@ -27,32 +28,32 @@ class Shipment(Base):
 
     created_at: Mapped[datetime] = mapped_column(default=datetime.now)
 
-    seller: Mapped["Seller"] = relationship(back_populates="seller.shipments")
-    delivery_partner: Mapped["DeliveryPartner"] = relationship(back_populates="delivery_partner.shipments")
+    seller: Mapped["Seller"] = relationship(back_populates="shipments", lazy="selectin")
+    delivery_partner: Mapped["DeliveryPartner"] = relationship(back_populates="shipments", lazy="selectin")
 
-class Seller(Base):
-    __tablename__ = "seller"
-    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+class UserMixin:
     name: Mapped[str]
     email: Mapped[str]
     password_hash: Mapped[str]
+
+
+class Seller(Base, UserMixin):
+    __tablename__ = "seller"
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
 
     created_at: Mapped[datetime] = mapped_column(default=datetime.now)
 
-    shipments: Mapped[List["Shipment"]] = relationship(back_populates="seller")
+    shipments: Mapped[List["Shipment"]] = relationship(back_populates="seller", lazy="selectin")
 
 
-class DeliveryPartner(Base):
+class DeliveryPartner(Base, UserMixin):
     __tablename__ = "delivery_partner"
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
-    name: Mapped[str]
-    email: Mapped[str]
-    password_hash: Mapped[str]
 
     created_at: Mapped[datetime] = mapped_column(default=datetime.now)
 
     max_shipment_capacity: Mapped[int]
     zip_codes: Mapped[List[int]] = mapped_column(postgresql.ARRAY(postgresql.INTEGER))
 
-    shipments: Mapped[List["Shipment"]] = relationship(back_populates="delivery_partner")
+    shipments: Mapped[List["Shipment"]] = relationship(back_populates="delivery_partner", lazy="selectin")
 
