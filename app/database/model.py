@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy import ForeignKey
 from sqlalchemy.dialects import postgresql
@@ -22,7 +22,7 @@ class Shipment(Base):
     weight: Mapped[float]
     zip_code: Mapped[int]
     estimated_delivery: Mapped[datetime]
-    status: Mapped[ShipmentStatus]
+
     seller_id: Mapped[UUID] = mapped_column(ForeignKey("seller.id"))
     delivery_partner_id: Mapped[UUID] = mapped_column(ForeignKey("delivery_partner.id"))
 
@@ -30,6 +30,21 @@ class Shipment(Base):
 
     seller: Mapped["Seller"] = relationship(back_populates="shipments", lazy="selectin")
     delivery_partner: Mapped["DeliveryPartner"] = relationship(back_populates="shipments", lazy="selectin")
+    events: Mapped[List["ShipmentEvent"]] = relationship(back_populates="shipment", lazy="selectin")
+
+
+class ShipmentEvent(Base):
+    __tablename__ = "shipment_event"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    status: Mapped[ShipmentStatus]
+    location: Mapped[int]
+    description: Mapped[Optional[str]]
+
+    created_at: Mapped[datetime] = mapped_column(default=datetime.now)
+    
+    shipment_id: Mapped[UUID] = mapped_column(ForeignKey("shipment.id"))
+    shipment: Mapped["Shipment"] = relationship(back_populates="events", lazy="selectin")
 
 class UserMixin:
     name: Mapped[str]
@@ -40,6 +55,9 @@ class UserMixin:
 class Seller(Base, UserMixin):
     __tablename__ = "seller"
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+
+    address: Mapped[Optional[str]]
+    zip_code: Mapped[Optional[int]]
 
     created_at: Mapped[datetime] = mapped_column(default=datetime.now)
 
@@ -56,4 +74,3 @@ class DeliveryPartner(Base, UserMixin):
     zip_codes: Mapped[List[int]] = mapped_column(postgresql.ARRAY(postgresql.INTEGER))
 
     shipments: Mapped[List["Shipment"]] = relationship(back_populates="delivery_partner", lazy="selectin")
-
