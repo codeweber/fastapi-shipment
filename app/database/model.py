@@ -32,6 +32,20 @@ class Shipment(Base):
     delivery_partner: Mapped["DeliveryPartner"] = relationship(back_populates="shipments", lazy="selectin")
     events: Mapped[List["ShipmentEvent"]] = relationship(back_populates="shipment", lazy="selectin")
 
+    @property
+    def get_latest_event(self):
+        self.events.sort(key=lambda x: x.created_at)
+        return self.events[-1] if len(self.events) > 0 else None 
+    
+    @property
+    def status(self):
+        last_event = self.get_latest_event
+        if last_event:
+            return last_event.status
+        else:
+            return None
+        
+
 
 class ShipmentEvent(Base):
     __tablename__ = "shipment_event"

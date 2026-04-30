@@ -1,7 +1,10 @@
+from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
+
+from app.api.schema.shipment_event import ShipmentEvent
 
 from ...model.shipment_status import ShipmentStatus
 
@@ -13,5 +16,11 @@ class PreShipment(BaseModel):
 class Shipment(PreShipment):
     id: UUID
     estimated_delivery: datetime
-    status: ShipmentStatus
+    events: list[ShipmentEvent]
+
+class ShipmentUpdate(BaseModel):
+    location: Optional[int] = Field(default=None)
+    status: Optional[ShipmentStatus] = Field(default=None)
+    description: Optional[str] = Field(default=None)
+    estimated_delivery: Optional[None] = Field(default=None)
 

@@ -44,7 +44,7 @@ class DeliveryPartnerService(UserService):
                 for _ in (
                     shipment
                     for shipment in partner.shipments
-                    if shipment.status != ShipmentStatus.deliverd
+                    if shipment.status != ShipmentStatus.delivered
                 )
             )
             if num_active_shipments < partner.max_shipment_capacity:

@@ -8,6 +8,7 @@ from app.database.model import DeliveryPartner, Seller
 from app.database.redis import RedisDep
 from app.service import utils
 from app.service.delivery_partner import DeliveryPartnerService
+from app.service.shipment_event import ShipmentEventService
 from app.service.user import UserService
 
 from ..database.session import get_session
@@ -18,7 +19,7 @@ from ..core.security import oauth2_scheme_seller, oauth2_scheme_partner
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
 def get_shipment_service(session: SessionDep):
-    return ShipmentService(session)
+    return ShipmentService(session, ShipmentEventService(session))
 
 ShipmentServiceDep = Annotated[ShipmentService, Depends(get_shipment_service)]
 
@@ -94,4 +95,4 @@ async def get_current_partner(
 ) -> DeliveryPartner:
    return await _get_current_user(token_payload, partner_service)
 
-CurrentParnter = Annotated[DeliveryPartner, Depends(get_current_partner)]
+CurrentPartner = Annotated[DeliveryPartner, Depends(get_current_partner)]

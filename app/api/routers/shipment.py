@@ -4,8 +4,8 @@ from fastapi import APIRouter
 from fastapi import HTTPException
 from fastapi import status
 
-from ..schema.shipment import Shipment, PreShipment
-from ..dependencies import CurrentSeller, PartnerServiceDep, ShipmentServiceDep
+from ..schema.shipment import Shipment, PreShipment, ShipmentUpdate
+from ..dependencies import CurrentPartner, CurrentSeller, PartnerServiceDep, ShipmentServiceDep
 
 router = APIRouter(prefix="/shipment", tags=["shipment"])
 
@@ -35,6 +35,16 @@ async def create_shipment(pre_shipment: PreShipment, service: ShipmentServiceDep
     result = await service.create(pre_shipment, seller, delivery_partner)
     return result
 
+@router.patch("/{id}", response_model=Shipment)
+async def update_shipment(id: UUID, shipment_update: ShipmentUpdate, partner: CurrentPartner, service: ShipmentServiceDep):
+    update = shipment_update.model_dump(exclude_none=True)
+    if not update:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No data provided to update"
+        )
+    
+    return await service.update(id, shipment_update, partner)
 
 @router.delete("/{id}")
 async def delete_shipment(id: UUID, service: ShipmentServiceDep, seller: CurrentSeller) -> None:
