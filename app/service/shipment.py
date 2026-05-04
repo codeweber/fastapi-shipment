@@ -4,6 +4,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timedelta
 
+from app.model.errors import UnauthorizedException
 from app.model.shipment_status import ShipmentStatus
 from app.service.base import BaseService
 from app.service.shipment_event import ShipmentEventService
@@ -40,6 +41,23 @@ class ShipmentService(BaseService):
     
     async def get(self, id: UUID) -> Shipment | None:
         return await self._get(id)
+    
+    async def cancel(self, id: UUID, seller: Seller) -> Shipment | None:
+        entity_to_delete = await self.get(id)
+
+        if entity_to_delete is None:
+            return None 
+        
+        if entity_to_delete.seller_id != seller.id:
+            raise UnauthorizedException(f"Seller {seller.id} is not authorized to update shipment with ID {id}")
+        
+        cancel_event = await self.event_service.create(
+            entity_to_delete,
+            status = ShipmentStatus.cancelled
+        )
+
+        entity_to_delete.events.append(cancel_event)
+        return entity_to_delete
     
     async def delete(self, id: UUID, seller: Seller) -> int | None:
         entity_to_delete = await self.get(id)

@@ -4,6 +4,8 @@ from fastapi import APIRouter
 from fastapi import HTTPException
 from fastapi import status
 
+from app.model.errors import UnauthorizedException
+
 from ..schema.shipment import Shipment, PreShipment, ShipmentUpdate
 from ..dependencies import CurrentPartner, CurrentSeller, PartnerServiceDep, ShipmentServiceDep
 
@@ -46,9 +48,16 @@ async def update_shipment(id: UUID, shipment_update: ShipmentUpdate, partner: Cu
     
     return await service.update(id, shipment_update, partner)
 
-@router.delete("/{id}")
-async def delete_shipment(id: UUID, service: ShipmentServiceDep, seller: CurrentSeller) -> None:
-    result = await service.delete(id, seller)
+@router.get("/{id}/cancel", response_model=Shipment)
+async def cancel_shipment(id: UUID, service: ShipmentServiceDep, seller: CurrentSeller) -> None:
+    
+    try:
+        result = await service.cancel(id, seller)
+    except UnauthorizedException as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_UNAUTHORIZED,
+            detail=f"{e!r}"
+        )
 
     if result is None:
         raise HTTPException(
@@ -56,4 +65,4 @@ async def delete_shipment(id: UUID, service: ShipmentServiceDep, seller: Current
             detail=f"Given id {id} does not exist for seller with id {seller.id}"
         )
 
-    return None
+    return result
