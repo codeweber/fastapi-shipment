@@ -6,7 +6,7 @@ from fastapi import status
 
 from app.model.errors import UnauthorizedException
 
-from ..schema.shipment import Shipment, PreShipment, ShipmentUpdate
+from ..schema.shipment import Shipment, ShipmentCreate, ShipmentUpdate
 from ..dependencies import CurrentPartner, CurrentSeller, PartnerServiceDep, ShipmentServiceDep
 
 router = APIRouter(prefix="/shipment", tags=["shipment"])
@@ -25,7 +25,7 @@ async def get_shipment(id: UUID, service: ShipmentServiceDep, seller: CurrentSel
 
 
 @router.post("/")
-async def create_shipment(pre_shipment: PreShipment, service: ShipmentServiceDep, seller: CurrentSeller, partner_service: PartnerServiceDep) -> Shipment:
+async def create_shipment(pre_shipment: ShipmentCreate, service: ShipmentServiceDep, seller: CurrentSeller, partner_service: PartnerServiceDep) -> Shipment:
     delivery_partner = await partner_service.get_eligible_partner(pre_shipment.zip_code)
 
     if delivery_partner is None:

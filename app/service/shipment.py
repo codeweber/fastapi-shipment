@@ -10,7 +10,7 @@ from app.service.base import BaseService
 from app.service.shipment_event import ShipmentEventService
 
 from ..database.model import DeliveryPartner, Seller, Shipment
-from ..api.schema.shipment import PreShipment, ShipmentUpdate
+from ..api.schema.shipment import ShipmentCreate, ShipmentUpdate
 
 class ShipmentService(BaseService):
 
@@ -18,7 +18,7 @@ class ShipmentService(BaseService):
         super().__init__(Shipment, session)
         self.event_service = event_service
 
-    async def create(self, details: PreShipment, seller: Seller, delivery_partner: DeliveryPartner) -> Shipment:
+    async def create(self, details: ShipmentCreate, seller: Seller, delivery_partner: DeliveryPartner) -> Shipment:
         new_shipment = Shipment(
             **details.model_dump(),
             estimated_delivery = datetime.now() + timedelta(days = 3),

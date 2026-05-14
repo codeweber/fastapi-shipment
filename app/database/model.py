@@ -23,6 +23,8 @@ class Shipment(Base):
     zip_code: Mapped[int]
     estimated_delivery: Mapped[datetime]
 
+    client_contact_email: Mapped[str]
+
     seller_id: Mapped[UUID] = mapped_column(ForeignKey("seller.id"))
     delivery_partner_id: Mapped[UUID] = mapped_column(ForeignKey("delivery_partner.id"))
 

@@ -1,7 +1,7 @@
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
 from datetime import datetime
 
 from app.api.schema.shipment_event import ShipmentEvent
@@ -12,6 +12,9 @@ class PreShipment(BaseModel):
     content: str 
     weight: float
     zip_code: int
+
+class ShipmentCreate(PreShipment):
+    client_contact_email: EmailStr
 
 class Shipment(PreShipment):
     id: UUID
