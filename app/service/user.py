@@ -7,6 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.model import UserMixin
+from app.model.errors import UnauthorizedException
 from app.service.utils import encode_access_token
 
 
@@ -28,12 +29,15 @@ class UserService:
         stmt = select(self.user_type).where(self.user_type.email == username)
         result = await self.session.scalars(stmt)
         
-        maybe_user = result.one_or_none()
+        maybe_user: UserMixin | None = result.one_or_none()
         
         if not maybe_user or not (
             self.verify(password, maybe_user.password_hash)
         ):
             return None
+        
+        if not maybe_user.email_verified:
+            raise UnauthorizedException("Email address has not been verified")
         
         token = encode_access_token(data={
             "user": {

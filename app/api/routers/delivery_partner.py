@@ -6,6 +6,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from app.api.dependencies import PartnerServiceDep, get_partner_token_payload
 from app.api.schema.delivery_partner import DeliveryPartnerRead, DeliveryPartnerWithPassword, Token
+from app.model.errors import UnauthorizedException
 
 router = APIRouter(prefix="/partner", tags=["partner"])
 
@@ -18,7 +19,13 @@ async def login_partner(
     form_details: Annotated[OAuth2PasswordRequestForm, Depends()],
     service: PartnerServiceDep
 ) -> Token:
-    token = await service.token(form_details.username, form_details.password)
+    try:
+        token = await service.token(form_details.username, form_details.password)
+    except UnauthorizedException as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"{e!r}"
+        )
 
     if not token:
         raise HTTPException(

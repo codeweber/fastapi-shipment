@@ -6,6 +6,7 @@ from fastapi import status
 
 from app.api.dependencies import SellerServiceDep, get_seller_token_payload
 from app.api.schema.seller import SellerRead, SellerWithPassword, Token
+from app.model.errors import UnauthorizedException
 
 router = APIRouter(prefix="/seller", tags=["seller"])
 
@@ -19,7 +20,15 @@ async def login_seller(
     form_details: Annotated[OAuth2PasswordRequestForm, Depends()],
     service: SellerServiceDep,
 ) -> Token:
-    token = await service.token(form_details.username, form_details.password)
+    
+    try:
+        token = await service.token(form_details.username, form_details.password)
+    except UnauthorizedException as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"{e!r}"
+        )
+
 
     if not token:
         raise HTTPException(
