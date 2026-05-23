@@ -10,9 +10,9 @@ from app.service.notification import NotificationService
 
 
 class ShipmentEventService(BaseService):
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession, notification_service: NotificationService):
         super().__init__(ShipmentEvent, session)
-        self.notification_service = NotificationService()
+        self.notification_service = notification_service
 
     async def create(
         self,
@@ -65,16 +65,31 @@ class ShipmentEventService(BaseService):
 
 
     async def _notify(self, shipment: Shipment, status: ShipmentStatus):
+
+        subject: str = ""
+        template_name: str = ""
+        template_body: dict = {}
+
         match status:
             case ShipmentStatus.placed:
-                await self.notification_service.send_email(
-                    recipients=[shipment.client_contact_email],
-                    subject="Your order is shipped",
-                    body=f"Your order with {shipment.seller.name} has been picked up by {shipment.delivery_partner.name}"
-                )
+                subject="Your order is shipped"
+                template_body={
+                    "seller": shipment.seller.name,
+                    "partner": shipment.delivery_partner.name
+                }
+                template_name="mail_placed.html"
             case ShipmentStatus.out_for_delivery:
-                await self.notification_service.send_email(
-                    recipients=[shipment.client_contact_email],
-                    subject="Your order is out for delivery",
-                    body=f"Your order with {shipment.seller.name} is out for delivery"
-                )
+                subject="Your order is out for delivery"
+                template_body={
+                    "seller": shipment.seller.name,
+                }
+                template_name="mail_out_for_delivery.html"
+            case _:
+                return None
+            
+        await self.notification_service.send_email_with_template(
+                recipients=[shipment.client_contact_email],
+                subject=subject,
+                template_body=template_body,
+                template_name=template_name
+            )

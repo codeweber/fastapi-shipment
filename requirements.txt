@@ -1,4 +1,4 @@
-fastapi[all]
+fastapi[standard]==0.136.1
 sqlmodel
 asyncpg
 greenlet
@@ -7,4 +7,4 @@ pyjwt
 redis[hiredis]
 scalar-fastapi
 alembic
-fastapi-mail
+fastapi-mail==1.6.4

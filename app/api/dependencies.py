@@ -2,12 +2,13 @@ from typing import Annotated
 from uuid import UUID
 from jwt import InvalidTokenError
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import Depends, HTTPException, status
+from fastapi import BackgroundTasks, Depends, HTTPException, status
 
 from app.database.model import DeliveryPartner, Seller
 from app.database.redis import RedisDep
 from app.service import utils
 from app.service.delivery_partner import DeliveryPartnerService
+from app.service.notification import NotificationService
 from app.service.shipment_event import ShipmentEventService
 from app.service.user import UserService
 
@@ -18,8 +19,13 @@ from ..core.security import oauth2_scheme_seller, oauth2_scheme_partner
 
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
-def get_shipment_service(session: SessionDep):
-    return ShipmentService(session, ShipmentEventService(session))
+def get_notification_service(background_tasks: BackgroundTasks):
+    return NotificationService(background_tasks=background_tasks)
+
+NotificationServiceDep = Annotated[NotificationService, Depends(get_notification_service)]
+
+def get_shipment_service(session: SessionDep, notification_service: NotificationServiceDep):
+    return ShipmentService(session, ShipmentEventService(session, notification_service))
 
 ShipmentServiceDep = Annotated[ShipmentService, Depends(get_shipment_service)]
 
