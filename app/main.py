@@ -1,9 +1,4 @@
-import asyncio
-import time
-
-from fastapi import BackgroundTasks, FastAPI
-from fastapi.responses import JSONResponse
-from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
+from fastapi import FastAPI
 from scalar_fastapi import get_scalar_api_reference
 from contextlib import asynccontextmanager
 
@@ -13,7 +8,6 @@ from app.api.schema.mail import Mail
 from app.database.redis import close_redis_connection_pool, get_redis_connection_pool
 from app.database.session import create_tables
 from .api.routers import shipment, seller
-from app.settings import notification_settings
 
 @asynccontextmanager
 async def lifespan_handler(app: FastAPI):
