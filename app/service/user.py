@@ -4,7 +4,6 @@ from uuid import UUID
 
 from pwdlib import PasswordHash
 from redis.asyncio import Redis
-from regex import template
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,7 +12,7 @@ from app.model.errors import UnauthorizedException
 from app.service import utils
 from app.service.base import BaseService
 from app.service.notification import NotificationService
-from app.service.utils import encode_access_token
+from app.service.utils import decode_password_reset_token, encode_access_token
 from app.settings import deployment_settings
 
 
@@ -36,11 +35,14 @@ class UserService(BaseService):
     def verify(self, cleartext: str, encryptedtext: str) -> bool:
         return self._password_hash.verify(cleartext, encryptedtext)
 
-    async def token(self, username: str, password: str) -> Optional[str]:
-        stmt = select(self.model).where(self.model.email == username)
+    async def _get_user_by_email(self, email: str) -> Optional[UserMixin]:
+        stmt = select(self.model).where(self.model.email == email)
         result = await self.session.scalars(stmt)
-
         maybe_user: UserMixin | None = result.one_or_none()
+        return maybe_user
+
+    async def token(self, username: str, password: str) -> Optional[str]:
+        maybe_user = self._get_user_by_email(username)
 
         if not maybe_user or not (self.verify(password, maybe_user.password_hash)):
             return None
@@ -80,11 +82,13 @@ class UserService(BaseService):
 
         match user:
             case Seller():
-                path_prefix="seller"
+                path_prefix = "seller"
             case DeliveryPartner():
-                path_prefix="partner"
+                path_prefix = "partner"
             case _:
-                raise RuntimeError(f"Cannot infer path_prefix for unknown type {user!r}")
+                raise RuntimeError(
+                    f"Cannot infer path_prefix for unknown type {user!r}"
+                )
 
         self.notification_service.send_email_with_template(
             recipients=[user.email],
@@ -101,7 +105,7 @@ class UserService(BaseService):
         token_payload = utils.decode_email_validation_token(token)
 
         if not token_payload:
-            return None 
+            return None
 
         user_id = UUID(hex=token_payload.get("id"))
         user: UserMixin = await self._get(user_id)
@@ -112,3 +116,38 @@ class UserService(BaseService):
         user.email_verified = True
         await self._update(user)
         return user_id
+
+    async def send_password_reset(self, email: str, prefix: str) -> Optional[UUID]:
+
+        maybe_user = self._get_user_by_email(email)
+
+        if not maybe_user:
+            return None
+
+        user_id = maybe_user.id
+        token = utils.encode_password_reset_token(id=user_id)
+
+        self.notification_service.send_email_with_template(
+            recipients=[email],
+            subject="Reset Your Password",
+            template_body={
+                "username": maybe_user.name,
+                "password_reset_url": f"http://{deployment_settings.HOST}:{deployment_settings.PORT}/{prefix}/reset_password?token={token}",
+            },
+            template_name="mail_password_reset.html",
+        )
+
+        return user_id
+
+    async def reset_password(self, token: str, password: str) -> Optional[UserMixin]:
+
+        user_id = decode_password_reset_token(token)
+
+        maybe_user: UserMixin = (await self._get(id)) if user_id is not None else None
+
+        if not maybe_user:
+            return None
+
+        maybe_user.password_hash = self.hash(password)
+        updated_user = await self._update(maybe_user)
+        return updated_user
