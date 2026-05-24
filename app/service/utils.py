@@ -45,7 +45,7 @@ def decode_email_validation_token(token: str) -> Optional[dict[str,str]]:
             max_age=timedelta(
                 minutes=email_token_settings.EMAIL_TOKEN_DURATION_MINUTES
             ).total_seconds(),
-        ).get("email")
+        )
     except (BadSignature, SignatureExpired):
         return None
 
