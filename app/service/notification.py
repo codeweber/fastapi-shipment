@@ -85,7 +85,7 @@ class NotificationService:
         )
 
 
-    async def send_email_with_template(
+    def send_email_with_template(
         self,
         recipients: list[EmailStr],
         subject: str,

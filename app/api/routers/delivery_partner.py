@@ -43,3 +43,18 @@ async def logout_partner(
     token_id = token_payload.get("jti")
     expiry_time = datetime.fromtimestamp(token_payload.get("exp"), tz=datetime.UTC)
     await service.blacklist_token(token_id, expiry_time)
+
+@router.get("/verify")
+async def verify_email_partner(
+    token: str,
+    service: PartnerServiceDep
+):
+    id = await service.verify_email(token)
+
+    if not id:
+        raise HTTPException(
+            status=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid token"
+        )
+
+    return {"detail": f"Email verified for user {id}"}

@@ -19,3 +19,6 @@ class BaseService:
     
     async def _get(self, id) -> Optional[Base]:
         return (await self.session.get(self.model, id))
+    
+    async def _update(self, item: Base) -> Base:
+        return (await self._add(item))

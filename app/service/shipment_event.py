@@ -87,7 +87,7 @@ class ShipmentEventService(BaseService):
             case _:
                 return None
             
-        await self.notification_service.send_email_with_template(
+        self.notification_service.send_email_with_template(
                 recipients=[shipment.client_contact_email],
                 subject=subject,
                 template_body=template_body,

@@ -8,23 +8,24 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.schema.delivery_partner import DeliveryPartnerWithPassword
 from app.database.model import DeliveryPartner
 from app.model.shipment_status import ShipmentStatus
+from app.service.notification import NotificationService
 from app.service.user import UserService
 
 
 class DeliveryPartnerService(UserService):
-    def __init__(self, session: AsyncSession, redis: Redis):
-        super().__init__(user_type=DeliveryPartner, session=session, redis=redis)
+    def __init__(self, session: AsyncSession, redis: Redis, notification_service: NotificationService):
+        super().__init__(user_type=DeliveryPartner, session=session, redis=redis, notification_service=notification_service)
 
     async def create(self, details: DeliveryPartnerWithPassword) -> DeliveryPartner:
         new_partner = DeliveryPartner(
             **details.model_dump(exclude=["password"]),
             password_hash=self.hash(details.password),
         )
-        self.session.add(new_partner)
-        await self.session.commit()
-        await self.session.refresh(new_partner)
+        partner = await self._add(new_partner)
 
-        return new_partner
+        self.send_verification(partner)
+        
+        return partner
 
     async def get(self, id: UUID) -> Optional[DeliveryPartner]:
         return await self.session.get(DeliveryPartner, id)

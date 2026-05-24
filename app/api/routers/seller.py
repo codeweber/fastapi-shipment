@@ -39,7 +39,7 @@ async def login_seller(
     return Token(access_token=token, token_type="bearer")
 
 @router.post("/logout")
-async def logout_sellet(
+async def logout_seller(
     token_payload: Annotated[dict, Depends(get_seller_token_payload)],
     service: SellerServiceDep,
 ) -> None:
@@ -47,3 +47,17 @@ async def logout_sellet(
     expiry_time = datetime.fromtimestamp(token_payload.get("exp"), tz=UTC)
     await service.blacklist_token(token_id, expiry_time)
 
+@router.get("/verify")
+async def verify_email_seller(
+    token: str,
+    service: SellerServiceDep
+):
+    id = await service.verify_email(token)
+
+    if not id:
+        raise HTTPException(
+            status=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid token"
+        )
+
+    return {"detail": f"Email verified for user {id}"}

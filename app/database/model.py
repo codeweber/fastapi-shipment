@@ -63,6 +63,7 @@ class ShipmentEvent(Base):
     shipment: Mapped["Shipment"] = relationship(back_populates="events", lazy="selectin")
 
 class UserMixin:
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     name: Mapped[str]
     email: Mapped[str]
     email_verified: Mapped[bool] = mapped_column(default=False)
@@ -71,7 +72,6 @@ class UserMixin:
 
 class Seller(Base, UserMixin):
     __tablename__ = "seller"
-    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
 
     address: Mapped[Optional[str]]
     zip_code: Mapped[Optional[int]]
@@ -83,7 +83,6 @@ class Seller(Base, UserMixin):
 
 class DeliveryPartner(Base, UserMixin):
     __tablename__ = "delivery_partner"
-    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
 
     created_at: Mapped[datetime] = mapped_column(default=datetime.now)
 

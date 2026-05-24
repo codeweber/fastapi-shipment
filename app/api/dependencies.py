@@ -29,11 +29,11 @@ def get_shipment_service(session: SessionDep, notification_service: Notification
 
 ShipmentServiceDep = Annotated[ShipmentService, Depends(get_shipment_service)]
 
-def get_seller_service(session: SessionDep, redis: RedisDep):
-    return SellerService(session, redis)
+def get_seller_service(session: SessionDep, redis: RedisDep, ns: NotificationServiceDep):
+    return SellerService(session, redis, ns)
 
-def get_partner_service(session: SessionDep, redis: RedisDep):
-    return DeliveryPartnerService(session, redis)
+def get_partner_service(session: SessionDep, redis: RedisDep, ns: NotificationServiceDep):
+    return DeliveryPartnerService(session, redis, ns)
 
 SellerServiceDep = Annotated[SellerService, Depends(get_seller_service)]
 PartnerServiceDep = Annotated[DeliveryPartnerService, Depends(get_partner_service)]

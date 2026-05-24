@@ -52,10 +52,29 @@ class NotificationSettings(BaseSettings):
         env_file=".env", env_ignore_empty=True, extra="ignore"
     )
 
+class DeploymentSettings(BaseSettings):
+    HOST: str 
+    PORT: int 
+
+    model_config = SettingsConfigDict(
+        env_file=".env", env_ignore_empty=True, extra="ignore", env_prefix="DEPLOYMENT_"
+    )
+
+class EmailTokenSettings(BaseSettings):
+    EMAIL_TOKEN_SECRET: str
+    EMAIL_TOKEN_SALT: str
+    EMAIL_TOKEN_DURATION_MINUTES: int
+
+    model_config = SettingsConfigDict(
+        env_file=".env", env_ignore_empty=True, extra="ignore"
+    )
+
 db_settings = DatabaseSettings()
 cache_settings = CacheSettings()
 security_settings = SecuritySettings()
 notification_settings = NotificationSettings()
+deployment_settings = DeploymentSettings()
+email_token_settings = EmailTokenSettings()
 
 if __name__ == "__main__":
     print(db_settings.model_dump())
