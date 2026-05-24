@@ -65,7 +65,7 @@ class ShipmentEvent(Base):
 class UserMixin:
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     name: Mapped[str]
-    email: Mapped[str]
+    email: Mapped[str] = mapped_column(unique=True)
     email_verified: Mapped[bool] = mapped_column(default=False)
     password_hash: Mapped[str]
 
