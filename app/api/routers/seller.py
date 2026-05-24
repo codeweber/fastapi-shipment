@@ -103,7 +103,7 @@ async def reset_password_seller(
     service: SellerServiceDep
 ):
 
-    maybe_user = service.reset_password(token, password=password)
+    maybe_user = await service.reset_password(token, password=password)
 
     return templates.TemplateResponse(
         request=request,

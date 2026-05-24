@@ -42,7 +42,7 @@ class UserService(BaseService):
         return maybe_user
 
     async def token(self, username: str, password: str) -> Optional[str]:
-        maybe_user = self._get_user_by_email(username)
+        maybe_user = await self._get_user_by_email(username)
 
         if not maybe_user or not (self.verify(password, maybe_user.password_hash)):
             return None
@@ -119,7 +119,7 @@ class UserService(BaseService):
 
     async def send_password_reset(self, email: str, prefix: str) -> Optional[UUID]:
 
-        maybe_user = self._get_user_by_email(email)
+        maybe_user = await self._get_user_by_email(email)
 
         if not maybe_user:
             return None
@@ -132,7 +132,7 @@ class UserService(BaseService):
             subject="Reset Your Password",
             template_body={
                 "username": maybe_user.name,
-                "password_reset_url": f"http://{deployment_settings.HOST}:{deployment_settings.PORT}/{prefix}/reset_password?token={token}",
+                "password_reset_url": f"http://{deployment_settings.HOST}:{deployment_settings.PORT}{prefix}/reset_password?token={token}",
             },
             template_name="mail_password_reset.html",
         )
@@ -142,8 +142,7 @@ class UserService(BaseService):
     async def reset_password(self, token: str, password: str) -> Optional[UserMixin]:
 
         user_id = decode_password_reset_token(token)
-
-        maybe_user: UserMixin = (await self._get(id)) if user_id is not None else None
+        maybe_user: UserMixin = (await self._get(user_id)) if user_id is not None else None
 
         if not maybe_user:
             return None
