@@ -8,7 +8,7 @@ from twilio.rest import Client
 
 from app.service.utils import TEMPLATES_DIR
 
-from ..settings import notification_settings
+from ..settings import notification_settings, twilio_settings
 
 class NotificationService:
     def __init__(self, background_tasks: BackgroundTasks):
@@ -19,7 +19,10 @@ class NotificationService:
             )
         )
         self.tasks = background_tasks
-        self.twilio_client = Client(account_sid=notification_settings.TWILIO_SID, password=notification_settings.TWILIO_AUTH_TOKEN)
+        self.twilio_client = Client(
+            account_sid=twilio_settings.TWILIO_SID, 
+            password=twilio_settings.TWILIO_AUTH_TOKEN
+        )
 
     def _send_email_sync(
         self,
@@ -106,6 +109,6 @@ class NotificationService:
     async def send_sms(self, to: str, body: str) -> None:
         await self.twilio_client.messages.create_async(
             to=to,
-            from_=notification_settings.TWILIO_NUMBER,
+            from_=twilio_settings.TWILIO_NUMBER,
             body=body
         )

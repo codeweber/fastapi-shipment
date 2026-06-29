@@ -47,7 +47,12 @@ class NotificationSettings(BaseSettings):
     MAIL_STARTTLS: bool = True
     MAIL_SSL_TLS: bool = False
     VALIDATE_CERTS: bool = True
+    
+    model_config = SettingsConfigDict(
+        env_file=".env", env_ignore_empty=True, extra="ignore"
+    )
 
+class TwilioSettings(BaseSettings):
     TWILIO_SID: str 
     TWILIO_AUTH_TOKEN: str
     TWILIO_NUMBER: str
@@ -79,6 +84,7 @@ db_settings = DatabaseSettings()
 cache_settings = CacheSettings()
 security_settings = SecuritySettings()
 notification_settings = NotificationSettings()
+twilio_settings = TwilioSettings()
 deployment_settings = DeploymentSettings()
 user_verification_settings = UserVerificationSettings()
 
