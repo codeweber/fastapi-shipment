@@ -1,6 +1,8 @@
+from random import randint
 from typing import Optional
 from uuid import UUID
 
+from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.model import Shipment, ShipmentEvent
@@ -10,9 +12,10 @@ from app.service.notification import NotificationService
 
 
 class ShipmentEventService(BaseService):
-    def __init__(self, session: AsyncSession, notification_service: NotificationService):
+    def __init__(self, session: AsyncSession, notification_service: NotificationService, redis: Redis):
         super().__init__(ShipmentEvent, session)
         self.notification_service = notification_service
+        self.redis = redis
 
     async def create(
         self,
@@ -84,6 +87,17 @@ class ShipmentEventService(BaseService):
                     "seller": shipment.seller.name,
                 }
                 template_name="mail_out_for_delivery.html"
+
+                verification_code = randint(100_000, 999_999)
+                self._set_verification_code(id = shipment.id, verification_code=verification_code)
+
+                if shipment.client_contact_phone:
+                    await self.notification_service.send_sms(
+                        shipment.client_contact_phone,
+                        body=f"Your order is arriving soon! Share the code {verification_code} to receive your package!"
+                    )
+                else:
+                    template_body["verification_code"] = verification_code
             case _:
                 return None
             
@@ -93,3 +107,24 @@ class ShipmentEventService(BaseService):
                 template_body=template_body,
                 template_name=template_name
             )
+        
+    def get_verification_code_key(self, id: UUID) -> str:
+        return f"vc_{id}"
+        
+    async def _set_verification_code(self, id: UUID, verification_code: int) -> None:
+        await self.redis.set(self.get_verification_code_key(id), str(verification_code))
+
+    async def _get_verification_code(self, id: UUID) -> Optional[int]:
+        value = await self.redis.get(self.get_verification_code_key(id))
+        return int(value) if value is not None else None
+    
+    async def is_verification_code_correct(self, shipment: Shipment, verification_code: int) -> bool:
+        key = self.get_verification_code_key(shipment.id)
+        expected_verification_code = await self.redis.get(key)
+
+        if (verification_code is None) or (expected_verification_code is None):
+            return False 
+        else:
+            return expected_verification_code == verification_code
+            
+

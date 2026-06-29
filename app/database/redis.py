@@ -6,7 +6,8 @@ from redis.asyncio import ConnectionPool, Redis
 from ..settings import cache_settings
 
 def get_redis_connection_pool():
-    return ConnectionPool.from_url(cache_settings.get_url())
+    # Decode responses always, to get str values as str and not bytes
+    return ConnectionPool.from_url(cache_settings.get_url(), decode_responses=True)
 
 async def close_redis_connection_pool(pool: ConnectionPool) -> None:
     await pool.aclose()

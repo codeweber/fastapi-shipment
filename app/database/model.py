@@ -24,6 +24,7 @@ class Shipment(Base):
     estimated_delivery: Mapped[datetime]
 
     client_contact_email: Mapped[str]
+    client_contact_phone: Mapped[Optional[str]]
 
     seller_id: Mapped[UUID] = mapped_column(ForeignKey("seller.id"))
     delivery_partner_id: Mapped[UUID] = mapped_column(ForeignKey("delivery_partner.id"))

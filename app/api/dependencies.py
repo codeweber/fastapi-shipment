@@ -24,8 +24,8 @@ def get_notification_service(background_tasks: BackgroundTasks):
 
 NotificationServiceDep = Annotated[NotificationService, Depends(get_notification_service)]
 
-def get_shipment_service(session: SessionDep, notification_service: NotificationServiceDep):
-    return ShipmentService(session, ShipmentEventService(session, notification_service))
+def get_shipment_service(session: SessionDep, notification_service: NotificationServiceDep, redis: RedisDep):
+    return ShipmentService(session, ShipmentEventService(session, notification_service, redis))
 
 ShipmentServiceDep = Annotated[ShipmentService, Depends(get_shipment_service)]
 

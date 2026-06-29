@@ -1,6 +1,10 @@
 <body>
     <p>Hi, </p>
     <p>Your order with {{ seller }} is out for delivery </p>
+
+    {% if verification_code %}
+    <p>Share your code {{ verification_code}} upon delivery to receive your order!</p>
+    {% endif %}
     <br>
     <p>Powered by FastShip</p>
 </body>

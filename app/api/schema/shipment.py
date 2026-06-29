@@ -15,6 +15,7 @@ class PreShipment(BaseModel):
 
 class ShipmentCreate(PreShipment):
     client_contact_email: EmailStr
+    client_contact_phone: Optional[str] = Field(default = None)
 
 class Shipment(PreShipment):
     id: UUID
@@ -24,6 +25,7 @@ class Shipment(PreShipment):
 class ShipmentUpdate(BaseModel):
     location: Optional[int] = Field(default=None)
     status: Optional[ShipmentStatus] = Field(default=None)
+    verification_code: Optional[int] = Field(default=None)
     description: Optional[str] = Field(default=None)
     estimated_delivery: Optional[None] = Field(default=None)
 

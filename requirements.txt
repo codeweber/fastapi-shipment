@@ -8,3 +8,4 @@ redis[hiredis]
 scalar-fastapi
 alembic
 fastapi-mail==1.6.4
+twilio==9.10.9

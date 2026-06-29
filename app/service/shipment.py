@@ -82,6 +82,14 @@ class ShipmentService(BaseService):
                 detail="Delivery Partner is not permitted to update this shipment"
             )
         
+        if shipment_update.status == ShipmentStatus.delivered:
+            valid_verification_code = await self.event_service.is_verification_code_correct(shipment=shipment, verification_code=shipment_update.verification_code)
+            if not valid_verification_code:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="The verification code is missing or incorrect"
+                )
+        
         if shipment_update.estimated_delivery:
             shipment.estimated_delivery = shipment_update.estimated_delivery
 
