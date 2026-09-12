@@ -1,16 +1,17 @@
+from datetime import datetime, timedelta
 from uuid import UUID
 
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import datetime, timedelta
 
 from app.model.errors import UnauthorizedException
 from app.model.shipment_status import ShipmentStatus
 from app.service.base import BaseService
 from app.service.shipment_event import ShipmentEventService
 
-from ..database.model import DeliveryPartner, Seller, Shipment
 from ..api.schema.shipment import ShipmentCreate, ShipmentUpdate
+from ..database.model import DeliveryPartner, Seller, Shipment
+
 
 class ShipmentService(BaseService):
 
@@ -93,7 +94,7 @@ class ShipmentService(BaseService):
         if shipment_update.estimated_delivery:
             shipment.estimated_delivery = shipment_update.estimated_delivery
 
-        update = shipment_update.model_dump(exclude_none=True, exclude={'estimated_delivery'})
+        update = shipment_update.model_dump(exclude={'estimated_delivery', 'verification_code'})
 
         if len(update) > 0:
             await self.event_service.create(

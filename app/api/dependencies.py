@@ -19,7 +19,7 @@ from ..core.security import oauth2_scheme_seller, oauth2_scheme_partner
 
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
-def get_notification_service(background_tasks: BackgroundTasks):
+async def get_notification_service(background_tasks: BackgroundTasks):
     return NotificationService(background_tasks=background_tasks)
 
 NotificationServiceDep = Annotated[NotificationService, Depends(get_notification_service)]

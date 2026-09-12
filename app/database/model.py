@@ -1,15 +1,14 @@
+from datetime import datetime
 from typing import List, Optional
+from uuid import UUID, uuid4
 
 from sqlalchemy import ForeignKey
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.asyncio import AsyncAttrs
-from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy.orm import Mapped
-from sqlalchemy.orm import mapped_column, relationship
-from datetime import datetime
-from uuid import UUID, uuid4
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 from ..model.shipment_status import ShipmentStatus
+
 
 class Base(DeclarativeBase, AsyncAttrs):
     pass
