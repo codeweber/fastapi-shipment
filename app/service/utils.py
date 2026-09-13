@@ -3,8 +3,8 @@ from pathlib import Path
 from typing import Optional
 from uuid import UUID, uuid4
 
-from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 import jwt
+from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 
 from app.settings import security_settings, user_verification_settings
 
@@ -67,3 +67,6 @@ def decode_password_reset_token(token: str) -> Optional[UUID]:
         return None
 
     return UUID(id)
+
+def generate_url_safe_token(data: dict, salt: str | None = None) -> str:
+    return _serializer.dumps(data, salt=salt)

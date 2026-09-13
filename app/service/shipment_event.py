@@ -9,6 +9,8 @@ from app.database.model import Shipment, ShipmentEvent
 from app.model.shipment_status import ShipmentStatus
 from app.service.base import BaseService
 from app.service.notification import NotificationService
+from app.service.utils import generate_url_safe_token
+from app.settings import deployment_settings
 
 
 class ShipmentEventService(BaseService):
@@ -98,6 +100,14 @@ class ShipmentEventService(BaseService):
                     )
                 else:
                     template_body["verification_code"] = verification_code
+            case ShipmentStatus.delivered:
+                subject="Your order has been delivered"
+                token = generate_url_safe_token({"id": str(shipment.id)})
+                template_body={
+                    "seller": shipment.seller.name,
+                    "review_url": f"http:{deployment_settings.HOST}:{deployment_settings.PORT}/shipment/review?token={token}"
+                }
+                template_name="mail_delivered.html"
             case _:
                 return None
             
