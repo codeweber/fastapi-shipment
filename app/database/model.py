@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List, Optional
 from uuid import UUID, uuid4
 
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, UniqueConstraint
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -33,6 +33,7 @@ class Shipment(Base):
     seller: Mapped["Seller"] = relationship(back_populates="shipments", lazy="selectin")
     delivery_partner: Mapped["DeliveryPartner"] = relationship(back_populates="shipments", lazy="selectin")
     events: Mapped[List["ShipmentEvent"]] = relationship(back_populates="shipment", lazy="selectin")
+    review: Mapped["Review"] = relationship(back_populates="shipment", lazy="selectin")
 
     @property
     def get_latest_event(self):
@@ -90,3 +91,20 @@ class DeliveryPartner(Base, UserMixin):
     zip_codes: Mapped[List[int]] = mapped_column(postgresql.ARRAY(postgresql.INTEGER))
 
     shipments: Mapped[List["Shipment"]] = relationship(back_populates="delivery_partner", lazy="selectin")
+
+class Review(Base):
+    __tablename__ = "review"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+
+    created_at: Mapped[datetime] = mapped_column(default=datetime.now)
+
+    rating: Mapped[int]
+    comment: Mapped[str | None] = mapped_column(default=None)
+
+    shipment_id: Mapped[UUID] = mapped_column(ForeignKey("shipment.id"))
+    shipment: Mapped["Shipment"] = relationship(back_populates="review", lazy="selectin")
+
+    __table_args__ = (
+        UniqueConstraint("shipment_id"),
+    )
