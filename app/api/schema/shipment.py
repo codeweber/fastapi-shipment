@@ -29,3 +29,7 @@ class ShipmentUpdate(BaseModel):
     description: Optional[str] = Field(default=None)
     estimated_delivery: Optional[None] = Field(default=None)
 
+class ShipmentReview(BaseModel):
+    rating: int = Field(ge=1, le=5)
+    comment: str | None = Field(default=None)
+

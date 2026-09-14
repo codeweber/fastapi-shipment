@@ -76,6 +76,8 @@ class UserVerificationSettings(BaseSettings):
     EMAIL_TOKEN_DURATION_MINUTES: int
     PASSWORD_TOKEN_SALT: str
     PASSWORD_TOKEN_DURATION_MINUTES: int
+    REVIEW_TOKEN_SALT: str
+    REVIEW_TOKEN_DURATION_DAYS: int
 
     model_config = SettingsConfigDict(
         env_file=".env", env_ignore_empty=True, extra="ignore"

@@ -68,5 +68,19 @@ def decode_password_reset_token(token: str) -> Optional[UUID]:
 
     return UUID(id)
 
-def generate_url_safe_token(data: dict, salt: str | None = None) -> str:
-    return _serializer.dumps(data, salt=salt)
+def encode_review_token(shipment_id: UUID) -> str:
+    return _serializer.dumps(shipment_id.hex, salt=user_verification_settings.REVIEW_TOKEN_SALT)
+
+def decode_review_token(token: str) -> UUID | None:
+    try:
+        id_hex = _serializer.loads(
+            token,
+            salt=user_verification_settings.REVIEW_TOKEN_SALT,
+            max_age=timedelta(
+                days=user_verification_settings.REVIEW_TOKEN_DURATION_DAYS
+            ).total_seconds()
+        )
+    except (BadSignature, SignatureExpired):
+        return None
+
+    return UUID(id_hex)

@@ -5,8 +5,9 @@ from fastapi import HTTPException
 from fastapi import status
 
 from app.model.errors import UnauthorizedException
+from app.service.utils import decode_review_token
 
-from ..schema.shipment import Shipment, ShipmentCreate, ShipmentUpdate
+from ..schema.shipment import Shipment, ShipmentCreate, ShipmentReview, ShipmentUpdate
 from ..dependencies import CurrentPartner, CurrentSeller, PartnerServiceDep, ShipmentServiceDep
 
 router = APIRouter(prefix="/shipment", tags=["shipment"])
@@ -66,3 +67,23 @@ async def cancel_shipment(id: UUID, service: ShipmentServiceDep, seller: Current
         )
 
     return result
+
+@router.post("/review")
+async def submit_review(token: str, review: ShipmentReview, service: ShipmentServiceDep):
+
+    shipment_id = decode_review_token(token)
+    if not shipment_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has expired."
+        )
+
+    review = await service.rate(shipment_id, review)
+
+    if not review:
+        raise HTTPException(
+            status=status.HTTP_400_BAD_REQUEST,
+            detail="Token invalid"
+        )
+
+    return { "detail": "Review submitted successfully." }

@@ -9,8 +9,8 @@ from app.model.shipment_status import ShipmentStatus
 from app.service.base import BaseService
 from app.service.shipment_event import ShipmentEventService
 
-from ..api.schema.shipment import ShipmentCreate, ShipmentUpdate
-from ..database.model import DeliveryPartner, Seller, Shipment
+from ..api.schema.shipment import ShipmentCreate, ShipmentReview, ShipmentUpdate
+from ..database.model import DeliveryPartner, Review, Seller, Shipment
 
 
 class ShipmentService(BaseService):
@@ -103,6 +103,19 @@ class ShipmentService(BaseService):
             )
 
         return await self._add(shipment)
+
+    async def review(self, shipment_id: UUID, review: ShipmentReview) -> Review | None:
+        shipment = await self.get(shipment_id)
         
-    
+        if not shipment:
+            return None 
+
+        review = Review(
+            **review.model_dump(),
+            shipment_id=shipment.id
+        )
+        shipment.review = review
+        return await self._add(shipment)
+
+
 
