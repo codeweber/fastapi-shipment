@@ -2,6 +2,7 @@ from random import randint
 from typing import Optional
 from uuid import UUID
 
+from jwt import encode
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -9,7 +10,7 @@ from app.database.model import Shipment, ShipmentEvent
 from app.model.shipment_status import ShipmentStatus
 from app.service.base import BaseService
 from app.service.notification import NotificationService
-from app.service.utils import encode_review_token
+from app.service.utils import encode_review_token, get_review_url
 from app.settings import deployment_settings
 
 
@@ -102,10 +103,9 @@ class ShipmentEventService(BaseService):
                     template_body["verification_code"] = verification_code
             case ShipmentStatus.delivered:
                 subject="Your order has been delivered"
-                token = encode_review_token(shipment.id)
                 template_body={
                     "seller": shipment.seller.name,
-                    "review_url": f"http:{deployment_settings.HOST}:{deployment_settings.PORT}/shipment/review?token={token}"
+                    "review_url": get_review_url(token=encode_review_token(shipment_id=shipment.id))
                 }
                 template_name="mail_delivered.html"
             case _:

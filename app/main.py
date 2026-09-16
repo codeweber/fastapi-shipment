@@ -1,13 +1,16 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from scalar_fastapi import get_scalar_api_reference
-from contextlib import asynccontextmanager
 
 from app.api.dependencies import NotificationServiceDep
 from app.api.routers import delivery_partner
 from app.api.schema.mail import Mail
 from app.database.redis import close_redis_connection_pool, get_redis_connection_pool
 from app.database.session import create_tables
-from .api.routers import shipment, seller
+
+from .api.routers import review, seller, shipment
+
 
 @asynccontextmanager
 async def lifespan_handler(app: FastAPI):
@@ -23,6 +26,7 @@ app = FastAPI(lifespan=lifespan_handler)
 app.include_router(shipment.router)
 app.include_router(seller.router)
 app.include_router(delivery_partner.router)
+app.include_router(review.router)
 
 @app.post("/mail")
 async def get_mail(mail: Mail, notification_service: NotificationServiceDep):

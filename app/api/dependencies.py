@@ -1,8 +1,9 @@
 from typing import Annotated
 from uuid import UUID
+
+from fastapi import BackgroundTasks, Depends, HTTPException, status
 from jwt import InvalidTokenError
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import BackgroundTasks, Depends, HTTPException, status
 
 from app.database.model import DeliveryPartner, Seller
 from app.database.redis import RedisDep
@@ -12,10 +13,10 @@ from app.service.notification import NotificationService
 from app.service.shipment_event import ShipmentEventService
 from app.service.user import UserService
 
+from ..core.security import oauth2_scheme_partner, oauth2_scheme_seller
 from ..database.session import get_session
-from ..service.shipment import ShipmentService
 from ..service.seller import SellerService
-from ..core.security import oauth2_scheme_seller, oauth2_scheme_partner
+from ..service.shipment import ShipmentService
 
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
 

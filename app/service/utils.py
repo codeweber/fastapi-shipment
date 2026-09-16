@@ -6,7 +6,11 @@ from uuid import UUID, uuid4
 import jwt
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 
-from app.settings import security_settings, user_verification_settings
+from app.settings import (
+    deployment_settings,
+    security_settings,
+    user_verification_settings,
+)
 
 APP_DIR = Path(__file__).resolve().parent.parent
 TEMPLATES_DIR = APP_DIR / "templates"
@@ -84,3 +88,6 @@ def decode_review_token(token: str) -> UUID | None:
         return None
 
     return UUID(id_hex)
+
+def get_review_url(token: str) -> str:
+    return f"http://{deployment_settings.HOST}:{deployment_settings.PORT}/review?token={token}"

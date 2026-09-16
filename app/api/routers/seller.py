@@ -1,8 +1,8 @@
 from datetime import UTC, datetime
 from typing import Annotated
-from fastapi import APIRouter, Depends, Form, HTTPException, Request
+
+from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
-from fastapi import status
 from fastapi.templating import Jinja2Templates
 from pydantic import EmailStr
 
