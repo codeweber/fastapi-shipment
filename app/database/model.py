@@ -2,16 +2,24 @@ from datetime import datetime
 from typing import List, Optional
 from uuid import UUID, uuid4
 
-from sqlalchemy import ForeignKey, UniqueConstraint
+from sqlalchemy import Column, ForeignKey, Table, UniqueConstraint
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 from ..model.shipment_status import ShipmentStatus
+from ..model.shipment_tag import ShipmentTag
 
 
 class Base(DeclarativeBase, AsyncAttrs):
     pass
+
+link_shipment_tag = Table(
+    "shipment_tag",
+    Base.metadata,
+    Column("shipment_id", ForeignKey("shipment.id"), primary_key=True),
+    Column("tag_id", ForeignKey("tag.id"), primary_key=True)
+)
 
 class Shipment(Base):
     __tablename__ = "shipment"
@@ -34,6 +42,7 @@ class Shipment(Base):
     delivery_partner: Mapped["DeliveryPartner"] = relationship(back_populates="shipments", lazy="selectin")
     events: Mapped[List["ShipmentEvent"]] = relationship(back_populates="shipment", lazy="selectin")
     review: Mapped["Review"] = relationship(back_populates="shipment", lazy="selectin")
+    tags: Mapped[list["Tag"]] = relationship(secondary=link_shipment_tag, back_populates="shipments", lazy="selectin")
 
     @property
     def get_latest_event(self):
@@ -62,6 +71,15 @@ class ShipmentEvent(Base):
     
     shipment_id: Mapped[UUID] = mapped_column(ForeignKey("shipment.id"))
     shipment: Mapped["Shipment"] = relationship(back_populates="events", lazy="selectin")
+
+class Tag(Base):
+    __tablename__ = "tag"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    name: Mapped[ShipmentTag]
+    instruction: Mapped[str]
+
+    shipments: Mapped[list["Shipment"]] = relationship(secondary=link_shipment_tag, back_populates="tags", lazy="selectin")
 
 class UserMixin:
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
